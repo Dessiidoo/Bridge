@@ -13,6 +13,7 @@ export default function Header() {
     { name: "Find Jobs", href: "/jobs" },
     { name: "Profile", href: "/profile" },
     { name: "My Matches", href: "/matches" },
+    { name: "Documents", href: "/documents" },
     { name: "AI Assistant", href: "/assistant" },
     { name: "Pricing", href: "/pricing" },
   ];

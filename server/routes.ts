@@ -312,6 +312,102 @@ ${context ? `Additional context: ${JSON.stringify(context)}` : ''}`
     }
   });
 
+  // Document Generation API - Generate complete job application packets
+  app.post("/api/generate-documents", async (req, res) => {
+    try {
+      const { userId, jobId, matchId } = req.body;
+      
+      if (!userId || !jobId) {
+        return res.status(400).json({ message: "User ID and Job ID are required" });
+      }
+
+      const [userProfile, job, match] = await Promise.all([
+        storage.getUserProfile(userId),
+        storage.getJobOpportunity(jobId),
+        matchId ? storage.getJobMatch(matchId) : null
+      ]);
+
+      if (!userProfile || !job) {
+        return res.status(404).json({ message: "User profile or job not found" });
+      }
+
+      // Generate comprehensive document packet using AI
+      const response = await openai.chat.completions.create({
+        model: "gpt-5",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert international job placement agent and immigration attorney. Generate a comprehensive document packet for someone applying to an international job. Include all necessary forms, templates, and guidance.
+
+Respond with JSON in this exact format:
+{
+  "coverLetter": "Complete cover letter text tailored to the job",
+  "resumeTemplate": "Optimized resume format for this country/industry", 
+  "applicationEmail": "Professional email template to send to employer",
+  "visaDocuments": ["List of required visa/work permit documents"],
+  "legalForms": ["List of legal forms needed in destination country"],
+  "interviewPrep": "Interview preparation guide with cultural tips",
+  "checklist": ["Step by step checklist with timelines"],
+  "estimatedCosts": {
+    "visaFees": "Amount in local currency",
+    "documentFees": "Amount in local currency", 
+    "totalEstimate": "Total estimated cost"
+  },
+  "timeline": "Realistic timeline from application to job start"
+}`
+          },
+          {
+            role: "user",
+            content: `Generate documents for:
+
+User Profile:
+- Name: ${userProfile.fullName}
+- Nationality: ${userProfile.nationality}
+- Current Location: ${userProfile.currentLocation}
+- Education: ${userProfile.education}
+- Languages: ${userProfile.languages.join(', ')}
+- Skills: ${userProfile.skills.join(', ')}
+- Experience: ${JSON.stringify(userProfile.workExperience)}
+- Has Passport: ${userProfile.hasPassport}
+
+Job Opportunity:
+- Title: ${job.title}
+- Company: ${job.company}
+- Location: ${job.city}, ${job.country}
+- Industry: ${job.industry}
+- Salary: ${job.salary.min}-${job.salary.max} ${job.salary.currency}
+- Visa Sponsorship: ${job.visaSponsorship}
+- Requirements: ${job.requirements.join(', ')}
+- Languages Required: ${job.languagesRequired.join(', ')}
+
+${match ? `AI Match Analysis: ${match.matchAnalysis}` : ''}`
+          }
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      const documentPacket = JSON.parse(response.choices[0].message.content || "{}");
+      
+      // Add metadata
+      const result = {
+        id: `packet-${Date.now()}`,
+        userId,
+        jobId,
+        matchId,
+        generatedAt: new Date().toISOString(),
+        jobTitle: job.title,
+        company: job.company,
+        country: job.country,
+        ...documentPacket
+      };
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error("Document generation error:", error);
+      res.status(500).json({ message: "Error generating documents: " + error.message });
+    }
+  });
+
   // Analytics endpoint for global job statistics
   app.get("/api/analytics/job-stats", async (req, res) => {
     try {

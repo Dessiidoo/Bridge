@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Target, MapPin, Building, DollarSign, Clock, CheckCircle, TrendingUp, Users, Sparkles } from "lucide-react";
+import { Target, MapPin, Building, DollarSign, Clock, CheckCircle, TrendingUp, Users, Sparkles, FileText } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -264,10 +264,20 @@ export default function Matches() {
                       </Badge>
                     </div>
                     
-                    <Button className="w-full mt-4" data-testid={`button-view-details-${match.id}`}>
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      View Full Analysis & Apply
-                    </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => window.location.href = `/documents?userId=${userId}&jobId=${match.job?.id}&matchId=${match.id}`}
+                        data-testid={`button-generate-documents-${match.id}`}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate Documents
+                      </Button>
+                      <Button data-testid={`button-view-details-${match.id}`}>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        View & Apply
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

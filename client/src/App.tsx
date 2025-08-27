@@ -10,6 +10,7 @@ import Profile from "@/pages/profile";
 import Matches from "@/pages/matches";
 import Assistant from "@/pages/assistant";
 import Pricing from "@/pages/pricing";
+import Documents from "@/pages/documents";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
@@ -25,6 +26,7 @@ function Router() {
           <Route path="/matches" component={Matches} />
           <Route path="/assistant" component={Assistant} />
           <Route path="/pricing" component={Pricing} />
+          <Route path="/documents" component={Documents} />
           <Route component={NotFound} />
         </Switch>
       </main>
